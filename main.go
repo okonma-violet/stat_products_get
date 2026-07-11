@@ -39,10 +39,16 @@ type stat_products_get_req struct {
 }
 
 type stat_products_get_resp struct {
-	Items     []*stat_products_item `json:"items"`
-	Date_from int64                 `json:"date_from"`
-	Date_to   int64                 `json:"date_to"`
-	Category  string                `json:"category"`
+	Items     []*stat_products_item    `json:"items"`
+	Date_from int64                    `json:"date_from"`
+	Date_to   int64                    `json:"date_to"`
+	Category  string                   `json:"category"`
+	Suppliers []stat_products_item_sup `json:"suppliers"`
+}
+
+type stat_products_item_sup struct {
+	Id   int    `json:"id"`
+	Name string `json:"name"`
 }
 
 type stat_products_item struct {
@@ -65,10 +71,10 @@ type stat_products_item struct {
 	// Stock_avg_nozeroes_sum   float64                  `json:"stock_avg_nozeroes_sum"`
 	// Price_avg                float64                  `json:"price_avg"`
 	// Price_min                float64                  `json:"price_min"`
-	Suppliers_stat []stat_products_item_sup `json:"suppliers_stat"`
+	Suppliers_stat []stat_products_item_sup_stat `json:"suppliers_stat"`
 }
 
-type stat_products_item_sup struct {
+type stat_products_item_sup_stat struct {
 	supplierid      int
 	sourceid        int
 	earliest_upload int
@@ -155,11 +161,14 @@ func (s *service) HandleHTTP(r *suckhttp.Request, l logger.Logger) (*suckhttp.Re
 		resp.Category = reqdata.Category
 	}
 
-	srcsup_list, err := getSuppliersSourced(s.postgresdb, reqdata.Suppliers)
+	srcsup_list, sl, err := getSuppliersSourced(s.postgresdb, reqdata.Suppliers)
 	if err != nil {
 		l.Error("getSuppliersSourced", err)
 		return nil, nil
 	}
+
+	resp.Suppliers = sl
+
 	for i := range srcsup_list {
 		if err = srcsup_list[i].getUploadsStat(s.postgresdb, from, to); err != nil {
 			l.Error("getUploadsStat", err)

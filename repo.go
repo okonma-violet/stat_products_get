@@ -34,33 +34,38 @@ func openPostgresDBRepository(connectionString string) (db *pgxpool.Pool, err er
 // 	return true
 // }
 
-func getSuppliersSourced(db *pgxpool.Pool, suppliers []int) ([]stat_products_item_sup, error) {
+func getSuppliersSourced(db *pgxpool.Pool, suppliers []int) ([]stat_products_item_sup_stat, []stat_products_item_sup, error) {
 	rows, err := db.Query(context.Background(),
 		`SELECT s.id,ss.id, s.name from suppliers s JOIN suppliers_sources ss ON s.id=ss.supplierid WHERE s.id=ANY($1)
 		ORDER BY s.name ASC, ss.id ASC`, suppliers)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	itemslist := make([]stat_products_item_sup, 0)
+	itemslist := make([]stat_products_item_sup_stat, 0)
+	itemslist_s := make([]stat_products_item_sup, 0)
 	for rows.Next() {
-		s := stat_products_item_sup{
+		s := stat_products_item_sup_stat{
 			prices:          make([]float64, 0),
 			stocks:          make([]float64, 0),
 			stocks_nozeroes: make([]float64, 0),
 		}
 		if err := rows.Scan(&s.supplierid, &s.sourceid, &s.Supplier_name); err != nil {
 			rows.Close()
-			return nil, err
+			return nil, nil, err
 		}
 		itemslist = append(itemslist, s)
+		itemslist_s = append(itemslist_s, stat_products_item_sup{
+			Id:   s.supplierid,
+			Name: s.Supplier_name,
+		})
 	}
 	if rows.Err() != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return itemslist, nil
+	return itemslist, itemslist_s, nil
 }
 
-func (sup *stat_products_item_sup) getUploadsStat(db *pgxpool.Pool, from, to time.Time) error {
+func (sup *stat_products_item_sup_stat) getUploadsStat(db *pgxpool.Pool, from, to time.Time) error {
 	rows, err := db.Query(context.Background(),
 		`(SELECT id, time
 		FROM uploads_raw
@@ -93,7 +98,7 @@ func (sup *stat_products_item_sup) getUploadsStat(db *pgxpool.Pool, from, to tim
 	return nil
 }
 
-func getAllProductsCated(db *pgxpool.Pool, catname string, sups []stat_products_item_sup) ([]*stat_products_item, error) {
+func getAllProductsCated(db *pgxpool.Pool, catname string, sups []stat_products_item_sup_stat) ([]*stat_products_item, error) {
 	rows, err := db.Query(context.Background(), `SELECT p.brand, p.articul, po.origin_brand, po.origin_articul, po.sourceid, po.stock, po.price, po.name, p.category
 	FROM products p JOIN products_offers po ON p.id=po.productid
 	WHERE category=$1`, catname)
@@ -142,7 +147,7 @@ rowing:
 			Brand:          brand,
 			Articul:        articul,
 			namesraw:       make([]string, 0),
-			Suppliers_stat: make([]stat_products_item_sup, len(sups)),
+			Suppliers_stat: make([]stat_products_item_sup_stat, len(sups)),
 		}
 		copy(item.Suppliers_stat, sups)
 		if len(name) > 0 {
@@ -168,7 +173,7 @@ rowing:
 	return items, nil
 }
 
-func getAllProducts(db *pgxpool.Pool, sups []stat_products_item_sup) ([]*stat_products_item, error) {
+func getAllProducts(db *pgxpool.Pool, sups []stat_products_item_sup_stat) ([]*stat_products_item, error) {
 	rows, err := db.Query(context.Background(), `SELECT p.brand, p.articul, po.origin_brand, po.origin_articul, po.sourceid, po.stock, po.price, po.name, p.category
 	FROM products p JOIN products_offers po ON p.id=po.productid`)
 	if err != nil {
@@ -216,7 +221,7 @@ rowing1:
 			Brand:          brand,
 			Articul:        articul,
 			namesraw:       make([]string, 0),
-			Suppliers_stat: make([]stat_products_item_sup, len(sups)),
+			Suppliers_stat: make([]stat_products_item_sup_stat, len(sups)),
 		}
 		copy(item.Suppliers_stat, sups)
 		if len(name) > 0 {
@@ -289,7 +294,7 @@ rowing2:
 			Brand:          brand,
 			Articul:        articul,
 			namesraw:       make([]string, 0),
-			Suppliers_stat: make([]stat_products_item_sup, len(sups)),
+			Suppliers_stat: make([]stat_products_item_sup_stat, len(sups)),
 		}
 		copy(item.Suppliers_stat, sups)
 
