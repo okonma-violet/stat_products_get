@@ -100,8 +100,8 @@ type stat_products_item_sup_stat struct {
 	Stock_avg_nozeroes float64 `json:"stock_avg_nozeroes"`
 	Price_avg          float64 `json:"price_avg"`
 	Price_min          float64 `json:"price_min"`
-	Stock_current      int     `json:"stock__current"`
-	Price_current      float64 `json:"price__current"`
+	Stock_current      int     `json:"stock_current"`
+	Price_current      float64 `json:"price_current"`
 }
 
 func (c *config) InitFlags() {
