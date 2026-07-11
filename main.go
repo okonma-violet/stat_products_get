@@ -75,10 +75,13 @@ type stat_products_item struct {
 }
 
 type stat_products_item_sup_stat struct {
-	supplierid      int
-	sourceid        int
-	earliest_upload int
-	latest_upload   int
+	supplierid           int
+	sourceid             int
+	earliest_upload      int
+	latest_upload        int
+	earliest_upload_time time.Time
+	latest_upload_time   time.Time
+	not_actual           bool
 
 	prices          []float64
 	stocks          []float64
@@ -174,6 +177,7 @@ func (s *service) HandleHTTP(r *suckhttp.Request, l logger.Logger) (*suckhttp.Re
 			l.Error("getUploadsStat", err)
 			return nil, nil
 		}
+		srcsup_list[i].checkActual()
 	}
 
 	if reqdata.Category != "" {

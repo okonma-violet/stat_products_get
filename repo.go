@@ -80,6 +80,7 @@ func (sup *stat_products_item_sup_stat) getUploadsStat(db *pgxpool.Pool, from, t
 	if err != nil {
 		return err
 	}
+
 	for rows.Next() {
 		var id int
 		var t time.Time
@@ -89,11 +90,21 @@ func (sup *stat_products_item_sup_stat) getUploadsStat(db *pgxpool.Pool, from, t
 		}
 		if sup.earliest_upload == 0 {
 			sup.earliest_upload = id
+			sup.earliest_upload_time = t
 		}
 		sup.latest_upload = id
+		sup.latest_upload_time = t
 	}
 	if rows.Err() != nil {
 		return err
+	}
+	return nil
+}
+
+func (sup *stat_products_item_sup_stat) checkActual() error {
+	tlim := time.Now().Add(-48 * time.Hour)
+	if sup.latest_upload_time.Before(tlim) {
+		sup.not_actual = true
 	}
 	return nil
 }
@@ -125,8 +136,10 @@ rowing:
 						if f.Suppliers_stat[i].Brand == "" {
 							f.Suppliers_stat[i].Brand = orig_br
 							f.Suppliers_stat[i].Articul = orig_art
-							f.Suppliers_stat[i].Stock_current = stock
-							f.Suppliers_stat[i].Price_current = truncatePrec(price)
+							if !f.Suppliers_stat[i].not_actual {
+								f.Suppliers_stat[i].Stock_current = stock
+								f.Suppliers_stat[i].Price_current = truncatePrec(price)
+							}
 							if len(name) > 0 {
 								f.namesraw = append(f.namesraw, name)
 							}
@@ -150,16 +163,15 @@ rowing:
 			Suppliers_stat: make([]stat_products_item_sup_stat, len(sups)),
 		}
 		copy(item.Suppliers_stat, sups)
-		if len(name) > 0 {
-			item.namesraw = append(item.namesraw, name)
-		}
 
 		for i := range item.Suppliers_stat {
 			if item.Suppliers_stat[i].sourceid == srcid {
 				item.Suppliers_stat[i].Brand = orig_br
 				item.Suppliers_stat[i].Articul = orig_art
-				item.Suppliers_stat[i].Stock_current = stock
-				item.Suppliers_stat[i].Price_current = truncatePrec(price)
+				if !item.Suppliers_stat[i].not_actual {
+					item.Suppliers_stat[i].Stock_current = stock
+					item.Suppliers_stat[i].Price_current = truncatePrec(price)
+				}
 				item.namesraw = append(item.namesraw, name)
 				break
 			}
@@ -199,8 +211,10 @@ rowing1:
 						if f.Suppliers_stat[i].Brand == "" {
 							f.Suppliers_stat[i].Brand = orig_br
 							f.Suppliers_stat[i].Articul = orig_art
-							f.Suppliers_stat[i].Stock_current = stock
-							f.Suppliers_stat[i].Price_current = truncatePrec(price)
+							if !f.Suppliers_stat[i].not_actual {
+								f.Suppliers_stat[i].Stock_current = stock
+								f.Suppliers_stat[i].Price_current = truncatePrec(price)
+							}
 							if len(name) > 0 {
 								f.namesraw = append(f.namesraw, name)
 							}
@@ -224,17 +238,18 @@ rowing1:
 			Suppliers_stat: make([]stat_products_item_sup_stat, len(sups)),
 		}
 		copy(item.Suppliers_stat, sups)
-		if len(name) > 0 {
-			item.namesraw = append(item.namesraw, name)
-		}
 
 		for i := range item.Suppliers_stat {
 			if item.Suppliers_stat[i].sourceid == srcid {
 				item.Suppliers_stat[i].Brand = orig_br
 				item.Suppliers_stat[i].Articul = orig_art
-				item.Suppliers_stat[i].Stock_current = stock
-				item.Suppliers_stat[i].Price_current = truncatePrec(price)
-				item.namesraw = append(item.namesraw, name)
+				if !item.Suppliers_stat[i].not_actual {
+					item.Suppliers_stat[i].Stock_current = stock
+					item.Suppliers_stat[i].Price_current = truncatePrec(price)
+				}
+				if len(name) > 0 {
+					item.namesraw = append(item.namesraw, name)
+				}
 				break
 			}
 		}
