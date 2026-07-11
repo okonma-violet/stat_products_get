@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -101,12 +102,12 @@ func (sup *stat_products_item_sup_stat) getUploadsStat(db *pgxpool.Pool, from, t
 	return nil
 }
 
-func (sup *stat_products_item_sup_stat) checkActual() error {
+func (sup *stat_products_item_sup_stat) checkActual() {
 	tlim := time.Now().Add(-48 * time.Hour)
 	if sup.latest_upload_time.Before(tlim) {
 		sup.not_actual = true
 	}
-	return nil
+	fmt.Println(sup.latest_upload_time, tlim, sup.latest_upload_time.Before(tlim))
 }
 
 func getAllProductsCated(db *pgxpool.Pool, catname string, sups []stat_products_item_sup_stat) ([]*stat_products_item, error) {
