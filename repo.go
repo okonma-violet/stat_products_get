@@ -108,7 +108,7 @@ rowing:
 		var brand, articul, orig_br, orig_art, name, cat string
 		var srcid, stock int
 		var price float64
-		if err := rows.Scan(&brand, &articul, &orig_br, &orig_art, &srcid, &stock, &price, &cat); err != nil {
+		if err := rows.Scan(&brand, &articul, &orig_br, &orig_art, &srcid, &stock, &price, &name, &cat); err != nil {
 			rows.Close()
 			return nil, err
 		}
@@ -122,7 +122,9 @@ rowing:
 							f.Suppliers_stat[i].Articul = orig_art
 							f.Suppliers_stat[i].Stock_current = stock
 							f.Suppliers_stat[i].Price_current = truncatePrec(price)
-							f.namesraw = append(f.namesraw, name)
+							if len(name) > 0 {
+								f.namesraw = append(f.namesraw, name)
+							}
 							break
 						} else {
 							break
@@ -143,6 +145,9 @@ rowing:
 			Suppliers_stat: make([]stat_products_item_sup, len(sups)),
 		}
 		copy(item.Suppliers_stat, sups)
+		if len(name) > 0 {
+			item.namesraw = append(item.namesraw, name)
+		}
 
 		for i := range item.Suppliers_stat {
 			if item.Suppliers_stat[i].sourceid == srcid {
@@ -177,7 +182,7 @@ rowing1:
 		var brand, articul, orig_br, orig_art, name, cat string
 		var srcid, stock int
 		var price float64
-		if err := rows.Scan(&brand, &articul, &orig_br, &orig_art, &srcid, &stock, &price); err != nil {
+		if err := rows.Scan(&brand, &articul, &orig_br, &orig_art, &srcid, &stock, &price, &name, &cat); err != nil {
 			rows.Close()
 			return nil, err
 		}
@@ -191,7 +196,9 @@ rowing1:
 							f.Suppliers_stat[i].Articul = orig_art
 							f.Suppliers_stat[i].Stock_current = stock
 							f.Suppliers_stat[i].Price_current = truncatePrec(price)
-							f.namesraw = append(f.namesraw, name)
+							if len(name) > 0 {
+								f.namesraw = append(f.namesraw, name)
+							}
 							break
 						} else {
 							break
@@ -212,6 +219,9 @@ rowing1:
 			Suppliers_stat: make([]stat_products_item_sup, len(sups)),
 		}
 		copy(item.Suppliers_stat, sups)
+		if len(name) > 0 {
+			item.namesraw = append(item.namesraw, name)
+		}
 
 		for i := range item.Suppliers_stat {
 			if item.Suppliers_stat[i].sourceid == srcid {
