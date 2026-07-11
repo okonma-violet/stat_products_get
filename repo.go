@@ -137,14 +137,7 @@ rowing:
 						if f.Suppliers_stat[i].Brand == "" {
 							f.Suppliers_stat[i].Brand = orig_br
 							f.Suppliers_stat[i].Articul = orig_art
-							//////////////////////
-							if articul == "hu7018z" {
-								fmt.Println(f.Suppliers_stat[i])
-								fmt.Println(f.Suppliers_stat[i].not_actual)
-								fmt.Println(stock, truncatePrec(price))
-							}
 
-							////////////
 							if !f.Suppliers_stat[i].not_actual {
 								f.Suppliers_stat[i].Stock_current = stock
 								f.Suppliers_stat[i].Price_current = truncatePrec(price)
@@ -177,6 +170,16 @@ rowing:
 			if item.Suppliers_stat[i].sourceid == srcid {
 				item.Suppliers_stat[i].Brand = orig_br
 				item.Suppliers_stat[i].Articul = orig_art
+
+				//////////////////////
+				if articul == "hu7018z" {
+					fmt.Println(item.Suppliers_stat[i])
+					fmt.Println(item.Suppliers_stat[i].not_actual)
+					fmt.Println(stock, truncatePrec(price))
+				}
+
+				////////////
+
 				if !item.Suppliers_stat[i].not_actual {
 					item.Suppliers_stat[i].Stock_current = stock
 					item.Suppliers_stat[i].Price_current = truncatePrec(price)
