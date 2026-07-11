@@ -141,7 +141,7 @@ func (s *service) HandleHTTP(r *suckhttp.Request, l logger.Logger) (*suckhttp.Re
 
 	if reqdata.Date_to != 0 {
 		to = time.Unix(reqdata.Date_to, 0)
-		to = to.Add(time.Microsecond * 86399999999) // 23:59:59.999999
+		// to = to.Add(time.Microsecond * 86399999999) // 23:59:59.999999
 	} else {
 		l.Error("req", errors.New("zero \"date_to\""))
 		return suckhttp.NewResponse(400, "Bad request"), nil

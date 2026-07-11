@@ -107,7 +107,7 @@ func (sup *stat_products_item_sup_stat) checkActual() {
 	if sup.latest_upload_time.Before(tlim) {
 		sup.not_actual = true
 	}
-	fmt.Println(sup.latest_upload_time, tlim, sup.latest_upload_time.Before(tlim))
+	// fmt.Println(sup.latest_upload_time, tlim, sup.latest_upload_time.Before(tlim))
 }
 
 func getAllProductsCated(db *pgxpool.Pool, catname string, sups []stat_products_item_sup_stat) ([]*stat_products_item, error) {
@@ -137,6 +137,14 @@ rowing:
 						if f.Suppliers_stat[i].Brand == "" {
 							f.Suppliers_stat[i].Brand = orig_br
 							f.Suppliers_stat[i].Articul = orig_art
+							//////////////////////
+							if articul == "hu7018z" {
+								fmt.Println(f.Suppliers_stat[i])
+								fmt.Println(f.Suppliers_stat[i].not_actual)
+								fmt.Println(stock, truncatePrec(price))
+							}
+
+							////////////
 							if !f.Suppliers_stat[i].not_actual {
 								f.Suppliers_stat[i].Stock_current = stock
 								f.Suppliers_stat[i].Price_current = truncatePrec(price)
